@@ -1,0 +1,11 @@
+﻿ID,Risk,Likelihood (estimate),Impact (estimate),Owner (proposed),Mitigation,Status
+R-01,Insufficient real user evidence,High,High,All,Recruit/reach client and label assumptions,Open
+R-02,MVP scope growth,High,High,Aitzhan Iliyas,Define exclusions with supervisor,Open
+R-03,AI authorization bypass,Medium,Critical,Aitzhan Iliyas,"Allowlist, reauthorization, confirmation, QA tests",Open
+R-04,Concurrent overlapping bookings,Medium,Critical,Aitzhan Iliyas,DB-enforced interval constraint and load tests,Open
+R-05,External AI provider failure / data concern,Medium,High,Aitzhan Iliyas,"Minimize data, mock provider, fail closed",Open
+R-06,API/frontend schema drift,High,Medium,Aibek Galmbekov,OpenAPI review and typed contract tests,Open
+R-07,Insufficient genuine contribution trace,High,High,All,Use real own-account commits and task links,Open
+R-08,Late supervisor response,Medium,High,All,Send artifacts and decisions promptly,Open
+R-09,Small/nonrepresentative UX sample,Medium,Medium,Daniil Khvan,Document limitations and sample size,Open
+R-10,PII included in interview/test repo,Medium,High,Daniil Khvan,Consent and synthetic test records,Open

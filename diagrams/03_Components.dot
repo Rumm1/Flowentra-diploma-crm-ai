@@ -1,0 +1,22 @@
+digraph components {
+ graph [fontname="DejaVu Sans",bgcolor="white",rankdir=LR,margin=0.18,pad=0.25,nodesep=0.52,ranksep=0.7,labelloc=t,label="Component architecture — modular monolith draft",fontsize=19,fontcolor="#13294b"];
+ node [fontname="DejaVu Sans",fontsize=10,shape=component,style=filled,fillcolor="#f8fafc",color="#94a3b8",penwidth=1.2,margin="0.15,0.11"];
+ edge [fontname="DejaVu Sans",fontsize=9,color="#64748b",arrowsize=0.7];
+ browser [label="React + TypeScript SPA",fillcolor="#dbeafe",color="#3b82f6"];
+ subgraph cluster_server {label="Go REST API — one deployable backend";fontname="DejaVu Sans";fontcolor="#2563eb";style="rounded,dashed";color="#93c5fd";
+ auth [label="Auth + RBAC middleware"];
+ crm [label="Clients + Deals services"];
+ tasks [label="Task service"];
+ books [label="Booking service\ntransactional overlap guard"];
+ reports [label="Report queries"];
+ ai [label="AI proposal/confirm gateway\nallowlist, revalidation"];
+ }
+ pg [label="PostgreSQL",shape=cylinder,style=filled,fillcolor="#d1fae5",color="#059669"];
+ ext [label="External LLM API",shape=box,style="rounded,filled",fillcolor="#fef3c7",color="#d97706"];
+ browser->auth [label="HTTPS / JSON"];
+ auth->crm;auth->tasks;auth->books;auth->reports;auth->ai;
+ crm->pg;tasks->pg;books->pg [label="TX + constraint"];reports->pg;ai->pg [label="proposal/audit"];
+ ai->ext [label="minimum context",dir=both];
+ ai->crm [style=dashed,label="authorized actions"];
+ ai->tasks [style=dashed];ai->books [style=dashed];
+}

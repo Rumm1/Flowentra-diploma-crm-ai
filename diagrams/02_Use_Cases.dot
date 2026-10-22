@@ -1,0 +1,24 @@
+digraph usecases {
+ graph [fontname="DejaVu Sans",bgcolor="white",rankdir=LR,margin=0.15,pad=0.25,nodesep=0.45,ranksep=0.8,labelloc=t,label="UML-style use cases — draft",fontsize=20,fontcolor="#13294b"];
+ node [fontname="DejaVu Sans",fontsize=10,color="#64748b",penwidth=1.2];
+ edge [fontname="DejaVu Sans",color="#64748b",arrowsize=0.65,penwidth=1.2];
+ admin [shape=box,style="rounded,filled",fillcolor="#dbeafe",label="Owner / Admin"];
+ manager [shape=box,style="rounded,filled",fillcolor="#dbeafe",label="Manager"];
+ employee [shape=box,style="rounded,filled",fillcolor="#dbeafe",label="Employee"];
+ subgraph cluster_sys {label="CRM + AI system boundary";labelloc=t;labeljust=l;fontname="DejaVu Sans";fontcolor="#2563eb";style="rounded,dashed";color="#93c5fd";margin=25;
+ signin [shape=ellipse,label="Sign in"];
+ clients [shape=ellipse,label="Manage clients"];
+ deals [shape=ellipse,label="Manage deals"];
+ tasks [shape=ellipse,label="Manage tasks"];
+ booking [shape=ellipse,label="Book/reschedule service"];
+ report [shape=ellipse,label="View reports"];
+ aiprop [shape=ellipse,label="Request AI proposal"];
+ approve [shape=ellipse,label="Approve/reject AI action"];
+ roles [shape=ellipse,label="Manage staff roles"];
+ }
+ admin->signin [arrowhead=none];manager->signin [arrowhead=none];employee->signin [arrowhead=none];
+ admin->roles [arrowhead=none];admin->report [arrowhead=none];
+ manager->clients [arrowhead=none];manager->deals [arrowhead=none];manager->tasks [arrowhead=none];manager->booking [arrowhead=none];manager->report [arrowhead=none];manager->aiprop [arrowhead=none];manager->approve [arrowhead=none];
+ employee->tasks [arrowhead=none];employee->booking [arrowhead=none];employee->aiprop [arrowhead=none];employee->approve [arrowhead=none];
+ aiprop->approve [style=dashed,label="optional confirmed mutation",color="#d97706",fontcolor="#d97706"];
+}

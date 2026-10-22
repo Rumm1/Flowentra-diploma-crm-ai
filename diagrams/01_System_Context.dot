@@ -1,0 +1,16 @@
+digraph context {
+ graph [fontname="DejaVu Sans",bgcolor="#ffffff",rankdir=LR,margin=0.15,pad=0.25,nodesep=0.65,ranksep=0.9,labelloc=t,label="System context — Business CRM + AI assistant (draft)",fontsize=19,fontcolor="#13294b"];
+ node [fontname="DejaVu Sans",fontsize=11,shape=box,style="rounded,filled",fillcolor="#f1f5f9",color="#94a3b8",penwidth=1.2,margin="0.18,0.13"];
+ edge [fontname="DejaVu Sans",fontsize=9,color="#475569",fontcolor="#334155",arrowsize=0.75];
+ {rank=same; owner [label="Business owner / Admin"]; manager [label="Manager"]; employee [label="Employee"];}
+ crm [label="CRM WEB PLATFORM\nClients • Deals • Tasks\nBookings • Reports\nAI proposal + approval",shape=box,style="rounded,filled",fillcolor="#dbeafe",color="#2563eb",penwidth=2,fontsize=14,margin="0.4,0.3"];
+ llm [label="External language model API\n(untrusted response)",fillcolor="#fef3c7",color="#d97706"];
+ db [label="PostgreSQL\n(system of record)",shape=cylinder,fillcolor="#d1fae5",color="#059669"];
+ owner->crm [label="admin + reports"];
+ manager->crm [label="operational workflows"];
+ employee->crm [label="assigned work"];
+ crm->llm [label="minimized AI request\n/ typed output",dir=both];
+ crm->db [label="authorized persistence",dir=both];
+ note [label="Customer: represented as client data;\nno customer-facing portal in MVP",shape=note,fillcolor="#fff7ed",color="#fdba74"];
+ note->crm [style=dashed,arrowhead=none];
+}

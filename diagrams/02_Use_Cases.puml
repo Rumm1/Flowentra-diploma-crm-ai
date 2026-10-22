@@ -1,0 +1,34 @@
+@startuml
+left to right direction
+actor "Owner / Admin" as Admin
+actor Manager
+actor Employee
+rectangle "CRM + AI platform" {
+  usecase "Sign in" as UC0
+  usecase "Manage clients" as UC1
+  usecase "Manage deals" as UC2
+  usecase "Manage assigned tasks" as UC3
+  usecase "Book/reschedule service" as UC4
+  usecase "View reports" as UC5
+  usecase "Request AI proposal" as UC6
+  usecase "Approve/reject proposed action" as UC7
+  usecase "Manage staff roles" as UC8
+}
+Admin --> UC0
+Admin --> UC8
+Admin --> UC5
+Manager --> UC0
+Manager --> UC1
+Manager --> UC2
+Manager --> UC3
+Manager --> UC4
+Manager --> UC5
+Manager --> UC6
+Manager --> UC7
+Employee --> UC0
+Employee --> UC3
+Employee --> UC4
+Employee --> UC6
+Employee --> UC7
+UC7 ..> UC6 : follows a proposal
+@enduml

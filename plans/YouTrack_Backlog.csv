@@ -1,0 +1,36 @@
+﻿Local reference (not real YouTrack ID),Summary,Assignee (proposed),Priority,Proposed due date,Workstream,Acceptance criteria,Depends on local reference,Milestone,Status (not verified complete)
+PLAN-001,Repository and team access,Aitzhan Iliyas,P0,2026-10-22,Git/identity,Repository exists; each person and supervisor can access; URL recorded,,M0,Planned
+PLAN-002,YouTrack project and members,Daniil Khvan,P0,2026-10-22,Project-management,Project URL exists and all three members are correctly invited,,M0,Planned
+PLAN-003,Proposal and MVP scope,Aitzhan Iliyas,P0,2026-10-22,Research,Proposal approved by team and submitted for supervisor comments,PLAN-001,M1,Planned
+PLAN-004,Validate target users interviews,Aibek Galmbekov,P0,2026-10-23,Research,Three or more genuine user consultations documented; or substantive actual client agreement; permission recorded,PLAN-003,M2,Planned
+PLAN-005,Analyze user evidence vs assumptions,Daniil Khvan,P0,2026-10-24,Research,Requirements cite interview IDs; unverified items marked as assumptions,PLAN-004,M2,Planned
+PLAN-006,Review 13 scientific publications,Aitzhan Iliyas,P0,2026-10-22,Research,At least 12 used sources and 8 scientific; critical insights tabulated,PLAN-003,M1,Planned
+PLAN-007,Compare four existing CRM systems,Aibek Galmbekov,P0,2026-10-23,Research,4 systems scored against 9 common criteria with vendor citations,PLAN-003,M1,Planned
+PLAN-008,Compare backend DB API AI alternatives,Aitzhan Iliyas,P0,2026-10-23,Architecture,3+ significant technical areas each with 2-3 alternatives and rationale,PLAN-003,M1,Planned
+PLAN-009,Functional requirements acceptance tests,Daniil Khvan,P0,2026-10-23,Requirements,Every P0 FR has observable pass/fail criterion and owner,PLAN-003,M1,Planned
+PLAN-010,Nonfunctional requirements metrics,Daniil Khvan,P0,2026-10-23,Requirements,"NFRs have target, conditions and verification method",PLAN-009,M1,Planned
+PLAN-011,System context diagram,Aitzhan Iliyas,P0,2026-10-23,Architecture,"Actors, trust boundaries and external LLM shown; editable source committed",PLAN-003,M1,Planned
+PLAN-012,UML use case diagram,Aibek Galmbekov,P0,2026-10-23,Architecture,3 roles and required scenarios aligned with FRs; editable source committed,PLAN-009,M1,Planned
+PLAN-013,Component diagram,Aitzhan Iliyas,P0,2026-10-23,Architecture,"React, backend components, DB and AI gateway shown with dependencies",PLAN-008,M1,Planned
+PLAN-014,Data model and booking invariants,Aitzhan Iliyas,P0,2026-10-23,Architecture,Entity relationships and half-open booking collision rule documented,PLAN-013,M1,Planned
+PLAN-015,Static interactive UX prototype,Aibek Galmbekov,P0,2026-10-23,UX,"Client, deal, task, booking, AI confirmation and report flows can be demonstrated",PLAN-009,M1,Planned
+PLAN-016,Prototype usability walkthrough,Daniil Khvan,P1,2026-10-24,UX,At least one witnessed walkthrough produces an honest observation log,PLAN-015,M2,Planned
+PLAN-017,REST API contract draft,Aitzhan Iliyas,P0,2026-10-23,API,"OpenAPI schema covers auth, clients, deals, tasks, bookings, AI proposal/confirm",PLAN-009,M1,Planned
+PLAN-018,Evaluation plan and baseline,Daniil Khvan,P0,2026-10-23,QA,"Baseline steps, outcome metrics, test conditions and targets documented",PLAN-009,M1,Planned
+PLAN-019,Negative and concurrency test cases,Daniil Khvan,P0,2026-10-23,QA,"Tests cover booking overlap, RBAC, prompt injection and AI review gating",PLAN-018,M1,Planned
+PLAN-020,Risk and dependency review,Aitzhan Iliyas,P0,2026-10-23,Management,"Risk owner, likelihood, impact, mitigation and dependency specified",PLAN-003,M1,Planned
+PLAN-021,README and repo file organization,Aibek Galmbekov,P0,2026-10-23,Git,"README lists setup, scope, roles, docs, status, prototype and issue link",PLAN-001,M1,Planned
+PLAN-022,Review instructions and PR templates,Daniil Khvan,P0,2026-10-23,Git,"PR template contains issue, tests, scope, reviewer and acceptance",PLAN-001,M1,Planned
+PLAN-023,Collect real supervisor feedback,Aitzhan Iliyas,P0,2026-10-24,Supervisor,"Exact feedback, date and requested changes logged; no invented quote",PLAN-003,M2,Planned
+PLAN-024,Apply and trace supervisor feedback,Aibek Galmbekov,P0,2026-10-24,Supervisor,At least requested changes have links to actual PRs or explicit pending reasons,PLAN-023,M2,Planned
+PLAN-025,Verify individual work evidence,Daniil Khvan,P0,2026-10-24,Git,Task/commit/PR links exist for all real author contributions,PLAN-001;PLAN-002,M2,Planned
+PLAN-026,Create pre-defense-1 tag and summary,Aitzhan Iliyas,P0,2026-10-24,Submission,"After review, immutable tag points to submitted commit and limitations documented",PLAN-021;PLAN-025,M3,Planned
+PLAN-027,Implement auth and permission tests,Aitzhan Iliyas,P0,TBD after pre-defense,Backend,Authenticated endpoints reject unauthorized state mutations,PLAN-017,M4,Planned
+PLAN-028,Build client/deal/task REST handlers,Aitzhan Iliyas,P0,TBD after pre-defense,Backend,Documented contract and passing integration tests,PLAN-027,M4,Planned
+PLAN-029,Implement React core screens,Aibek Galmbekov,P0,TBD after pre-defense,Frontend,All P0 CRUD flows integrated with real backend and errors handled,PLAN-028,M4,Planned
+PLAN-030,Implement booking transaction constraints,Aitzhan Iliyas,P0,TBD after pre-defense,Backend,Concurrent overlap tests pass; second booking returns 409,PLAN-028,M5,Planned
+PLAN-031,Implement AI proposal-confirmation,Aitzhan Iliyas,P0,TBD after pre-defense,AI,"Only allowlisted action types, approval, and execute-time checks",PLAN-027;PLAN-030,M5,Planned
+PLAN-032,Implement AI review interface,Aibek Galmbekov,P0,TBD after pre-defense,Frontend,Typed preview with approve/deny and error/expired states,PLAN-031,M5,Planned
+PLAN-033,Run AI security/robustness regression,Daniil Khvan,P0,TBD after pre-defense,QA,"Annotated corpus run, no unauthorized mutations; failures reported",PLAN-031,M5,Planned
+PLAN-034,Execute manual baseline and user pilot,Daniil Khvan,P1,TBD after pre-defense,Evaluation,"Raw timing and questionnaire results, sample size and limitations recorded",PLAN-029;PLAN-032,M6,Planned
+PLAN-035,Final technical report and reproducibility,Aitzhan Iliyas,P1,TBD after pre-defense,Evaluation,"Versioned final results, reproducible setup and limitations",PLAN-034,M6,Planned
