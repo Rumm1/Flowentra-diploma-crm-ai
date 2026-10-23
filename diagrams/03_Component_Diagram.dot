@@ -1,0 +1,49 @@
+digraph FlowentraComponents {
+  graph [rankdir=TB, bgcolor="white", pad="0.3", nodesep="0.4", ranksep="0.65", fontname="Arial", fontsize=20, label="Flowentra - proposed components and trust boundaries", labelloc=t];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=13, margin="0.14,0.1", color="#40556d", fillcolor="#eef4fb"];
+  edge [fontname="Arial", fontsize=10, color="#40556d", arrowsize=0.7];
+  browser [label="React browser\nForms + AI confirmation UI", fillcolor="#e3f3ec"];
+  subgraph cluster_go {
+    label="Trusted application boundary - one Go process (modular monolith)";
+    color="#7094bb"; style=rounded; fontsize=16;
+    transport [label="HTTP transport\nREST / JSON / validation"];
+    policy [label="Authentication + policy\nSession / role / ownership"];
+    identity [label="Identity\nAccounts / roles / revocation"];
+    crm [label="CRM\nClients / deals / tasks"];
+    schedule [label="Scheduling\nCreate / reschedule / cancel"];
+    reports [label="Reporting\nBounded aggregates"];
+    ai [label="AI orchestration\nSchema checks / proposals\nConfirm + reauthorize", fillcolor="#fff0d6"];
+    adapter [label="Provider adapter\nRedaction / limits / timeout", fillcolor="#fff0d6"];
+    store [label="Module repositories + transaction boundary\nParameters / version checks / audit / idempotency", fillcolor="#dceafd"];
+    audit [label="Audit module\nMutation + security events"];
+    logs [label="Diagnostic logging\nMetadata only / redacted"];
+    transport -> policy [label="Validated actor"];
+    policy -> identity;
+    policy -> crm;
+    policy -> schedule;
+    policy -> reports;
+    policy -> ai;
+    ai -> adapter [label="Minimized context"];
+    ai -> crm [label="Policy-checked service calls"];
+    ai -> schedule [label="Confirmed action only"];
+    ai -> store [label="Proposal state only"];
+    identity -> store;
+    crm -> store;
+    schedule -> store;
+    reports -> store [label="Read only"];
+    crm -> audit;
+    schedule -> audit;
+    identity -> audit;
+    ai -> audit [label="Proposal lifecycle"];
+    audit -> store [label="Same mutation transaction"];
+    transport -> logs [label="Request metadata"];
+  }
+  db [shape=cylinder, label="Private PostgreSQL\nCRM / sessions / proposals / audit\nConstraints reject booking overlap", fillcolor="#dceafd"];
+  provider [label="External AI provider\nUntrusted output; no DB access", fillcolor="#fff0d6"];
+  sink [label="Restricted log sink\nNo secrets or full CRM payloads", fillcolor="#f4f4f4"];
+  browser -> transport [label="HTTPS /api/v1"];
+  store -> db [label="Restricted SQL account"];
+  adapter -> provider [label="HTTPS; bounded request"];
+  provider -> adapter [label="Candidate output"];
+  logs -> sink;
+}
