@@ -1,0 +1,15 @@
+digraph FlowentraContext {
+  graph [rankdir=LR, bgcolor="white", pad="0.35", nodesep="0.65", ranksep="1.0", fontname="Arial", fontsize=20, label="Flowentra - proposed system context", labelloc=t];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=15, margin="0.18,0.12", color="#40556d", fillcolor="#eef4fb"];
+  edge [fontname="Arial", fontsize=12, color="#40556d", arrowsize=0.8];
+  staff [label="Internal staff\nAdmin / Manager / Employee", fillcolor="#e3f3ec"];
+  operator [label="Authorized operator\nDeployment, secrets, backups", fillcolor="#e3f3ec"];
+  flowentra [label="FLOWENTRA\nReact interface + Go application\nPostgreSQL persistence\nCRM, scheduling, reports, AI orchestration", fillcolor="#dceafd", penwidth=2];
+  provider [label="External AI provider\nUntrusted structured output\nNo database credentials", fillcolor="#fff0d6"];
+  future [label="FUTURE ONLY\nTelegram / WhatsApp / Instagram\nNot implemented", style="rounded,dashed,filled", fillcolor="#f4f4f4"];
+  staff -> flowentra [label="HTTPS: manual workflows\nand explicit AI confirmation"];
+  operator -> flowentra [label="Controlled administration"];
+  flowentra -> provider [label="HTTPS: minimized authorized context"];
+  provider -> flowentra [label="Candidate intent / response\nAlways validated"];
+  future -> flowentra [label="Proposed adapters", style=dashed, color="#7c7c7c"];
+}
