@@ -73,6 +73,10 @@ A modular monolith is appropriate for the initial team and deployment scope. Int
 
 React, Go, PostgreSQL, and REST are design selections to justify in PD-02. The MVP is an implementation target; this PD-01–PD-06 assignment primarily produces design and readiness artifacts, not a completed backend.
 
+For a fresh installation, the first administrator must be provisioned through a one-time operator-run CLI/bootstrap operation using a supplied secret, with no built-in credentials or public signup. It must refuse to create another bootstrap admin once an administrator exists, hash the password, and record the event. The operator must then use authenticated account administration. This bootstrap path is an implementation requirement, not an available command in this design package.
+
+Appointments store explicit `start_at` and `end_at` UTC instants derived from offset-bearing timestamps, with `start_at < end_at` and a maximum duration of 24 hours. Active bookings occupy half-open intervals `[start_at, end_at)`: one ending at 11:00 and another starting at 11:00 are adjacent and allowed. Only overlapping active intervals for the same employee conflict; different employees may overlap, and committed cancellation releases the slot. Display timezone is separate metadata. The database constraint and concurrency tests must preserve these semantics on both creation and rescheduling.
+
 ## 7. Out-of-scope extensions
 
 Telegram, WhatsApp, and Instagram are **proposed future extensions**, not implemented channels. Each would need platform-specific authentication, identity mapping, webhook verification, privacy decisions, abuse controls, and a separate acceptance plan. Other deferred work includes native mobile apps, billing, inventory, multi-tenancy, advanced analytics, automated outbound campaigns, and self-hosted model infrastructure.
