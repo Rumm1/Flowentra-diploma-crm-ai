@@ -40,7 +40,7 @@ Task PRs are independent and unmerged. Links below use exact task commits, so th
 
 | Task | Artifact | Review |
 | --- | --- | --- |
-| PD-01 | [Proposal and MVP](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/754ccad48a0c838569673f053a5915f71250de18/docs/01_Project_Proposal.md) | [PR #1](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/1) |
+| PD-01 | [Proposal and MVP](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/fc1c5db473620a21e64a59db38b9ac0e72ae4ef9/docs/01_Project_Proposal.md) | [PR #1](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/1) |
 | PD-02 | [Technology comparison](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/9a4eb83f4f9e90477acfd3c3e77ac3679334e487/docs/05_Technology_Comparison.md) | [PR #2](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/2) |
 | PD-03 | [Architecture](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/35a9a3fcf045190a555a20c26f4c583c1477c52c/docs/07_Architecture.md), [DOT/SVG/PNG diagrams](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/35a9a3fcf045190a555a20c26f4c583c1477c52c/diagrams) | [PR #3](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/3) |
 | PD-04 | [OpenAPI](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/1b81c15b1d254f3bdce6068fa6e169b930b74339/api/openapi.yaml), [backend design](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/1b81c15b1d254f3bdce6068fa6e169b930b74339/docs/Backend_Design.md) | [PR #4](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/4) |

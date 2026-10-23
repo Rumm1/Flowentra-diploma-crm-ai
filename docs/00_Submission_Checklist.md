@@ -21,7 +21,7 @@ The README links upstream artifacts at exact commits. These are unmerged task br
 
 All times below are **2026-10-23 +05:00**. T0 records initial draft completion before verification/corrections. The agent disclosed inability to guarantee six successive 20–25-minute windows; the user subsequently authorized real commits/PRs. These timestamps do **not** claim completed timed review windows. No timestamps were altered.
 
-| Task | Draft T0 | Commit time | Commit |
+| Task | Draft T0 | Initial commit time | Initial commit |
 | --- | --- | --- | --- |
 | PD-01 | 23:01:44 | 23:06:55 | `754ccad48a0c838569673f053a5915f71250de18` |
 | PD-02 | 23:04:15 | 23:08:56 | `9a4eb83f4f9e90477acfd3c3e77ac3679334e487` |
@@ -31,6 +31,8 @@ All times below are **2026-10-23 +05:00**. T0 records initial draft completion b
 | PD-06 | Recorded in task PR/final execution report | Read actual Git metadata after commit | Do not invent a self-referential SHA here |
 
 PD-02 was drafted locally before PD-01 publication while the initial remote/timing fallback was being resolved. Publication subsequently proceeded in task order. Do not describe the drafting sequence as six completed timed cycles.
+
+Automated review of PD-01 identified missing first-admin bootstrap and appointment boundary details in the proposal. Follow-up commit `fc1c5db473620a21e64a59db38b9ac0e72ae4ef9`, made at **23:35:19 +05:00**, specifies both consistently with PD-04. The README points to that corrected revision. This is a meaningful additional correction; an automated comment is not independent human approval. PD-06's subsequent link update is recorded in its PR and Git history.
 
 ## 3. Review and traceability gates
 
