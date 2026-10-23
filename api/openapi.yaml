@@ -1,0 +1,2908 @@
+openapi: 3.0.3
+info:
+  title: Flowentra Core REST API
+  version: 0.1.0-design
+  description: DESIGN ONLY. No endpoint implementation or deployment is claimed. Single organization per
+    deployment; fixed RBAC and record ownership. AI orchestration and external channels are not public
+    endpoints in this contract. See docs/Backend_Design.md.
+servers:
+- url: http://localhost:8080/api/v1
+  description: Proposed local development address; no running server implied. HTTPS required outside local
+    development.
+security:
+- bearerAuth: []
+tags:
+- name: Authentication
+  description: Revocable opaque sessions.
+- name: Identity
+  description: Internal users and fixed roles.
+- name: Clients
+  description: Shared client contact directory.
+- name: Deals
+  description: Owned sales opportunities.
+- name: Tasks
+  description: Owned work items.
+- name: Appointments
+  description: Single employee appointments.
+- name: Reports
+  description: Manager/admin summary aggregates.
+paths:
+  /auth/login:
+    post:
+      tags:
+      - Authentication
+      operationId: login
+      summary: Create a session
+      description: 'No signup. Generic credential failures do not reveal account existence. Proposed limits:
+        5 failed attempts per account+IP per 15 minutes, plus 30 attempts per IP per minute. One-hour
+        opaque revocable session; no refresh token.'
+      x-roles: []
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+  /auth/logout:
+    post:
+      tags:
+      - Authentication
+      operationId: logout
+      summary: Revoke the current session
+      description: Revokes only the presented session; returns no body. Repeated use of the revoked token
+        returns 401 and does not recreate a session.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '204':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+        '401':
+          $ref: '#/components/responses/Error401'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+  /auth/me:
+    get:
+      tags:
+      - Authentication
+      operationId: currentUser
+      summary: Read the current user
+      description: Returns current account state; role changes and deactivation revoke sessions.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+  /auth/password:
+    put:
+      tags:
+      - Authentication
+      operationId: changePassword
+      summary: Change own password
+      description: Verify current password; new password must differ and be 12–128 characters. Revoke
+        all sessions atomically, including this one. Reauthentication required; retry with revoked token
+        returns 401. Never echo passwords.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '204':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+  /roles:
+    get:
+      tags:
+      - Identity
+      operationId: listRoles
+      summary: List fixed roles
+      description: Admin only. Returns exactly admin, manager, employee. No custom role creation.
+      x-roles:
+      - admin
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roles'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+  /users/directory:
+    get:
+      tags:
+      - Identity
+      operationId: listDirectory
+      summary: List active assignment targets
+      description: All authenticated roles can read only active users id/display_name. This does not grant
+        access to their assigned records.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectoryUserPage'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+  /users:
+    get:
+      tags:
+      - Identity
+      operationId: listUsers
+      summary: List internal accounts
+      description: Admin only. Includes active and inactive accounts; deterministic cursor pagination.
+      x-roles:
+      - admin
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+    post:
+      tags:
+      - Identity
+      operationId: createUser
+      summary: Create an internal account
+      description: Admin only; unique normalized email. Starts active. Initial password is securely shared
+        outside the API by the administrator; no email delivery is implemented.
+      x-roles:
+      - admin
+      responses:
+        '201':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+            Location:
+              description: Relative URL of the new resource.
+              schema:
+                type: string
+                example: /api/v1/users/00000000-0000-4000-8000-000000000002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+  /users/{id}:
+    get:
+      tags:
+      - Identity
+      operationId: getUser
+      summary: Read an internal account
+      description: Admin only. For own account use /auth/me; for assignment use /users/directory.
+      x-roles:
+      - admin
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags:
+      - Identity
+      operationId: updateUser
+      summary: Update an internal account
+      description: Admin only. Deactivation or role change revokes sessions. Serialize role/deactivation
+        changes to prevent removing the last active admin. Email is immutable in this MVP.
+      x-roles:
+      - admin
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '412':
+          $ref: '#/components/responses/Error412'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '428':
+          $ref: '#/components/responses/Error428'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+  /clients:
+    get:
+      tags:
+      - Clients
+      operationId: listClients
+      summary: List clients
+      description: 'All roles share the client directory. Authorized filtering happens before pagination.
+        Order: created_at DESC, id DESC; not a historical snapshot.'
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientPage'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+      - name: q
+        in: query
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description: Case-insensitive literal substring in display_name; SQL wildcard characters treated
+          literally.
+      - name: archived
+        in: query
+        schema:
+          type: boolean
+          default: false
+        description: Select active or archived clients.
+    post:
+      tags:
+      - Clients
+      operationId: createClient
+      summary: Create client
+      description: All roles share the client directory. Creates an active client. Email and phone default
+        to null; at least a display name is required.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '201':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+            Location:
+              description: Relative URL of the new resource.
+              schema:
+                type: string
+                example: /api/v1/clients/00000000-0000-4000-8000-000000000002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientCreate'
+            example:
+              display_name: Example Repair Ltd
+              email: contact@example.com
+              phone: '+77010000000'
+  /clients/{id}:
+    get:
+      tags:
+      - Clients
+      operationId: getClient
+      summary: Read client
+      description: All roles share the client directory. Missing and inaccessible records both return
+        404.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags:
+      - Clients
+      operationId: updateClient
+      summary: Update client
+      description: 'All roles share the client directory. All roles may edit contact fields. Only admin/manager
+        may submit archived. Archiving preserves linked history; it blocks new records linked to the client.
+        Existing work can be completed/cancelled; restoration does not restore cancelled appointments.
+        PATCH uses a partial object: omitted fields are unchanged; null is permitted only where the schema
+        says so.'
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '412':
+          $ref: '#/components/responses/Error412'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '428':
+          $ref: '#/components/responses/Error428'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientUpdate'
+  /deals:
+    get:
+      tags:
+      - Deals
+      operationId: listDeals
+      summary: List deals
+      description: 'Employees see only deals with owner_id equal to their actor ID; admin/manager see
+        all. Authorized filtering happens before pagination. Order: created_at DESC, id DESC; not a historical
+        snapshot.'
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealPage'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+      - name: stage
+        in: query
+        schema:
+          type: string
+          enum:
+          - new
+          - qualified
+          - won
+          - lost
+    post:
+      tags:
+      - Deals
+      operationId: createDeal
+      summary: Create deal
+      description: Employees see only deals with owner_id equal to their actor ID; admin/manager see all.
+        Employee owner_id must be self; admin/manager may assign any active user. Client must be active.
+        Starts in new stage. Currency must equal the deployment currency.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '201':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+            Location:
+              description: Relative URL of the new resource.
+              schema:
+                type: string
+                example: /api/v1/deals/00000000-0000-4000-8000-000000000002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deal'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DealCreate'
+            example:
+              title: Maintenance agreement
+              client_id: 00000000-0000-4000-8000-000000000002
+              owner_id: 00000000-0000-4000-8000-000000000003
+              amount: '12500.00'
+              currency: KZT
+  /deals/{id}:
+    get:
+      tags:
+      - Deals
+      operationId: getDeal
+      summary: Read deal
+      description: Employees see only deals with owner_id equal to their actor ID; admin/manager see all.
+        Missing and inaccessible records both return 404.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deal'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags:
+      - Deals
+      operationId: updateDeal
+      summary: Update deal
+      description: 'Employees see only deals with owner_id equal to their actor ID; admin/manager see
+        all. Employee may edit only own deal and may not submit owner_id. Admin/manager may reassign to
+        active users. Client and currency are immutable. Any stage-to-stage transition is allowed; entering
+        won/lost sets closed_at, reopening clears it. Changing fields without a stage transition preserves
+        closed_at. PATCH uses a partial object: omitted fields are unchanged; null is permitted only where
+        the schema says so.'
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deal'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '412':
+          $ref: '#/components/responses/Error412'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '428':
+          $ref: '#/components/responses/Error428'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DealUpdate'
+  /tasks:
+    get:
+      tags:
+      - Tasks
+      operationId: listTasks
+      summary: List tasks
+      description: 'Employees see only tasks with owner_id equal to their actor ID; admin/manager see
+        all. Authorized filtering happens before pagination. Order: created_at DESC, id DESC; not a historical
+        snapshot.'
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskPage'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum:
+          - todo
+          - in_progress
+          - done
+          - cancelled
+      - name: due_before
+        in: query
+        schema:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        description: Strictly earlier due_at; excludes null deadlines.
+    post:
+      tags:
+      - Tasks
+      operationId: createTask
+      summary: Create task
+      description: Employees see only tasks with owner_id equal to their actor ID; admin/manager see all.
+        Employee owner_id must be self; admin/manager may assign any active user. Optional client_id must
+        reference an active client. Starts todo; due_at/client_id default null.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '201':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+            Location:
+              description: Relative URL of the new resource.
+              schema:
+                type: string
+                example: /api/v1/tasks/00000000-0000-4000-8000-000000000002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+            example:
+              title: Follow up on proposal
+              owner_id: 00000000-0000-4000-8000-000000000003
+              client_id: 00000000-0000-4000-8000-000000000002
+              due_at: '2026-11-02T09:00:00+05:00'
+  /tasks/{id}:
+    get:
+      tags:
+      - Tasks
+      operationId: getTask
+      summary: Read task
+      description: Employees see only tasks with owner_id equal to their actor ID; admin/manager see all.
+        Missing and inaccessible records both return 404.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags:
+      - Tasks
+      operationId: updateTask
+      summary: Update task
+      description: 'Employees see only tasks with owner_id equal to their actor ID; admin/manager see
+        all. Employee may edit only own task and may not submit owner_id. Admin/manager may reassign to
+        active users. Client linkage is immutable. All status transitions are allowed; entering done sets
+        completed_at; leaving done clears it. Null due_at clears the deadline. PATCH uses a partial object:
+        omitted fields are unchanged; null is permitted only where the schema says so.'
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '412':
+          $ref: '#/components/responses/Error412'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '428':
+          $ref: '#/components/responses/Error428'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+  /appointments:
+    get:
+      tags:
+      - Appointments
+      operationId: listAppointments
+      summary: List appointments
+      description: 'Employees see only appointments with employee_id equal to their actor ID; admin/manager
+        see all. Authorized filtering happens before pagination. Order: created_at DESC, id DESC; not
+        a historical snapshot.'
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentPage'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum:
+          - scheduled
+          - cancelled
+      - name: from
+        in: query
+        schema:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        description: With to, select overlap with [from,to). Both must be supplied together; positive
+          interval at most 366 days.
+      - name: to
+        in: query
+        schema:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        description: Exclusive interval end; requires from.
+    post:
+      tags:
+      - Appointments
+      operationId: createAppointment
+      summary: Create appointment
+      description: Employees see only appointments with employee_id equal to their actor ID; admin/manager
+        see all. Employee employee_id must be self; admin/manager may book any active user. Client must
+        be active. Starts scheduled. start_at < end_at; positive duration at most 24 hours. Explicit offsets
+        required. Same-employee active overlap returns 409 even under concurrency.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '201':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+            Location:
+              description: Relative URL of the new resource.
+              schema:
+                type: string
+                example: /api/v1/appointments/00000000-0000-4000-8000-000000000002
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreate'
+            example:
+              client_id: 00000000-0000-4000-8000-000000000002
+              employee_id: 00000000-0000-4000-8000-000000000003
+              start_at: '2026-11-02T10:00:00+05:00'
+              end_at: '2026-11-02T11:00:00+05:00'
+              display_timezone: Asia/Qyzylorda
+  /appointments/{id}:
+    get:
+      tags:
+      - Appointments
+      operationId: getAppointment
+      summary: Read appointment
+      description: Employees see only appointments with employee_id equal to their actor ID; admin/manager
+        see all. Missing and inaccessible records both return 404.
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags:
+      - Appointments
+      operationId: updateAppointment
+      summary: Update appointment
+      description: 'Employees see only appointments with employee_id equal to their actor ID; admin/manager
+        see all. Employee may change only own appointment and may not submit employee_id. Admin/manager
+        may reassign to an active user. Client linkage is immutable. Time rules apply to merged state.
+        A status=cancelled patch must contain only status; cancellation is terminal and further patches
+        return 409. Rescheduling requires active client/user and rechecks overlap. Cancellation remains
+        possible for archived clients/inactive assignees. PATCH uses a partial object: omitted fields
+        are unchanged; null is permitted only where the schema says so.'
+      x-roles:
+      - admin
+      - manager
+      - employee
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+            ETag:
+              description: Strong resource version, for example "v3".
+              schema:
+                type: string
+                minLength: 1
+                maxLength: 30
+                pattern: ^"v[1-9][0-9]*"$
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '412':
+          $ref: '#/components/responses/Error412'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '428':
+          $ref: '#/components/responses/Error428'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentUpdate'
+  /reports/summary:
+    get:
+      tags:
+      - Reports
+      operationId: getReportSummary
+      summary: Read a bounded business summary
+      description: Admin/manager only. Require from < to and interval <=366 days, using UTC [from,to).
+        Counts and money are evaluated in one consistent read-only snapshot. See Backend_Design.md for
+        precise metric semantics. No employee-wide report access.
+      x-roles:
+      - admin
+      - manager
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            X-Request-ID:
+              description: Server-generated correlation identifier.
+              schema:
+                type: string
+                format: uuid
+            Cache-Control:
+              description: Sensitive responses are not stored.
+              schema:
+                type: string
+                enum:
+                - no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportSummary'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+      parameters:
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: One-hour revocable opaque token. Never a client-supplied role or user ID.
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Resource identifier; inaccessible records return 404.
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Page size.
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 2048
+      description: 'Opaque server-signed cursor bound to actor, filters and limit; expires after 15 minutes.
+        Invalid or expired cursor: 400.'
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: 'Required for business/account creation. Scope: actor + method + route + key, retained
+        24 hours. Same body replays original committed result after current authorization and object access
+        checks; changed body returns 409. Lost object access returns 404. No plaintext passwords are retained.'
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 30
+        pattern: ^"v[1-9][0-9]*"$
+      description: 'Exactly one strong resource ETag from a GET/create/update response, e.g. "v3". Missing:
+        428; stale: 412. Wildcards and lists unsupported.'
+  responses:
+    Error400:
+      description: Malformed JSON/header/query, unsupported fields, or invalid cursor.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Bad Request
+            status: 400
+            detail: Malformed JSON/header/query, unsupported fields, or invalid cursor.
+            code: invalid_request
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error401:
+      description: Missing, invalid, expired, or revoked bearer session; invalid login credentials.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+        WWW-Authenticate:
+          description: Bearer challenge.
+          schema:
+            type: string
+            example: Bearer
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Unauthorized
+            status: 401
+            detail: Missing, invalid, expired, or revoked bearer session; invalid login credentials.
+            code: unauthenticated
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error403:
+      description: Authenticated actor lacks route or field permission.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Forbidden
+            status: 403
+            detail: Authenticated actor lacks route or field permission.
+            code: forbidden
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error404:
+      description: Missing or inaccessible resource or reference; do not reveal its existence.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Not Found
+            status: 404
+            detail: Missing or inaccessible resource or reference; do not reveal its existence.
+            code: not_found
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error409:
+      description: Appointment overlap, changed idempotency payload, in-flight key, archived/inactive
+        reference, last-admin guard, duplicate email, or invalid transition.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Conflict
+            status: 409
+            detail: Appointment overlap, changed idempotency payload, in-flight key, archived/inactive
+              reference, last-admin guard, duplicate email, or invalid transition.
+            code: conflict
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error412:
+      description: The supplied ETag no longer matches the resource.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Precondition Failed
+            status: 412
+            detail: The supplied ETag no longer matches the resource.
+            code: stale_version
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error413:
+      description: Body exceeds 64 KiB.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Content Too Large
+            status: 413
+            detail: Body exceeds 64 KiB.
+            code: payload_too_large
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error415:
+      description: A JSON body requires application/json.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Unsupported Media Type
+            status: 415
+            detail: A JSON body requires application/json.
+            code: unsupported_media_type
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error422:
+      description: Well-formed JSON violates field or cross-field rules.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Unprocessable Content
+            status: 422
+            detail: Well-formed JSON violates field or cross-field rules.
+            code: validation_failed
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error428:
+      description: If-Match header is required.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Precondition Required
+            status: 428
+            detail: If-Match header is required.
+            code: precondition_required
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error429:
+      description: Rate limit exceeded; obey Retry-After.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+        Retry-After:
+          description: Suggested delay in seconds.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Too Many Requests
+            status: 429
+            detail: Rate limit exceeded; obey Retry-After.
+            code: rate_limited
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error500:
+      description: Unexpected failure; no partial success is returned.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Internal Server Error
+            status: 500
+            detail: Unexpected failure; no partial success is returned.
+            code: internal_error
+            request_id: 00000000-0000-4000-8000-000000000001
+    Error503:
+      description: Persistence or required audit storage unavailable. Retry according to operation semantics.
+      headers:
+        X-Request-ID:
+          description: Server-generated correlation identifier.
+          schema:
+            type: string
+            format: uuid
+        Cache-Control:
+          description: Sensitive responses are not stored.
+          schema:
+            type: string
+            enum:
+            - no-store
+        Retry-After:
+          description: Suggested delay in seconds.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Service Unavailable
+            status: 503
+            detail: Persistence or required audit storage unavailable. Retry according to operation semantics.
+            code: unavailable
+            request_id: 00000000-0000-4000-8000-000000000001
+  schemas:
+    Problem:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          format: uri
+          enum:
+          - about:blank
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Standard HTTP reason phrase for status.
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Safe explanation; no SQL, tokens, or inaccessible record details.
+        code:
+          type: string
+          minLength: 1
+          maxLength: 80
+          pattern: ^[a-z][a-z0-9_]*$
+        request_id:
+          type: string
+          format: uuid
+        errors:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              field:
+                type: string
+                minLength: 1
+                maxLength: 100
+              code:
+                type: string
+                minLength: 1
+                maxLength: 80
+              message:
+                type: string
+                minLength: 1
+                maxLength: 200
+            required:
+            - field
+            - code
+            - message
+      required:
+      - type
+      - title
+      - status
+      - detail
+      - code
+      - request_id
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          minLength: 1
+          maxLength: 254
+          format: email
+          description: Trim and normalize to lowercase under the MVP email policy.
+        password:
+          type: string
+          minLength: 1
+          maxLength: 128
+          format: password
+          writeOnly: true
+      required:
+      - email
+      - password
+    Session:
+      type: object
+      additionalProperties: false
+      properties:
+        access_token:
+          type: string
+          minLength: 1
+          maxLength: 512
+          description: Opaque random bearer token; store only in browser memory.
+        token_type:
+          type: string
+          enum:
+          - Bearer
+        expires_in:
+          type: integer
+          enum:
+          - 3600
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+      - access_token
+      - token_type
+      - expires_in
+      - user
+    PasswordChange:
+      type: object
+      additionalProperties: false
+      properties:
+        current_password:
+          type: string
+          minLength: 1
+          maxLength: 128
+          format: password
+          writeOnly: true
+        new_password:
+          type: string
+          minLength: 12
+          maxLength: 128
+          format: password
+          writeOnly: true
+      required:
+      - current_password
+      - new_password
+    UserCreate:
+      type: object
+      additionalProperties: false
+      properties:
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        email:
+          type: string
+          minLength: 1
+          maxLength: 254
+          format: email
+          description: Trim and normalize to lowercase under the MVP email policy.
+        role:
+          type: string
+          enum:
+          - admin
+          - manager
+          - employee
+        initial_password:
+          type: string
+          minLength: 12
+          maxLength: 128
+          format: password
+          writeOnly: true
+      required:
+      - display_name
+      - email
+      - role
+      - initial_password
+    UserUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        role:
+          type: string
+          enum:
+          - admin
+          - manager
+          - employee
+        active:
+          type: boolean
+      minProperties: 1
+    User:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        updated_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        email:
+          type: string
+          minLength: 1
+          maxLength: 254
+          format: email
+          description: Trim and normalize to lowercase under the MVP email policy.
+        role:
+          type: string
+          enum:
+          - admin
+          - manager
+          - employee
+        active:
+          type: boolean
+      required:
+      - id
+      - version
+      - created_at
+      - updated_at
+      - display_name
+      - email
+      - role
+      - active
+    DirectoryUser:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+      required:
+      - id
+      - display_name
+    Roles:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          minItems: 3
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - admin
+            - manager
+            - employee
+      required:
+      - data
+    ClientCreate:
+      type: object
+      additionalProperties: false
+      properties:
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        email:
+          type: string
+          minLength: 1
+          maxLength: 254
+          format: email
+          description: Trim and normalize to lowercase under the MVP email policy.
+          nullable: true
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 16
+          pattern: ^\+[1-9][0-9]{7,14}$
+          nullable: true
+      required:
+      - display_name
+    ClientUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        email:
+          type: string
+          minLength: 1
+          maxLength: 254
+          format: email
+          description: Trim and normalize to lowercase under the MVP email policy.
+          nullable: true
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 16
+          pattern: ^\+[1-9][0-9]{7,14}$
+          nullable: true
+        archived:
+          type: boolean
+          description: Only admin/manager may submit this field; false restores an archived client.
+      minProperties: 1
+    DealCreate:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        client_id:
+          type: string
+          format: uuid
+        owner_id:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          minLength: 1
+          maxLength: 15
+          pattern: ^(0|[1-9][0-9]{0,11})(\.[0-9]{1,2})?$
+          description: Non-negative exact decimal; server serializes two fractional digits. One deployment
+            currency.
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: Must equal the configured deployment currency, e.g. KZT.
+      required:
+      - title
+      - client_id
+      - owner_id
+      - amount
+      - currency
+    DealUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        owner_id:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          minLength: 1
+          maxLength: 15
+          pattern: ^(0|[1-9][0-9]{0,11})(\.[0-9]{1,2})?$
+          description: Non-negative exact decimal; server serializes two fractional digits. One deployment
+            currency.
+        stage:
+          type: string
+          enum:
+          - new
+          - qualified
+          - won
+          - lost
+      minProperties: 1
+    TaskCreate:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        client_id:
+          type: string
+          format: uuid
+          nullable: true
+        owner_id:
+          type: string
+          format: uuid
+        due_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+          nullable: true
+      required:
+      - title
+      - owner_id
+    TaskUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        owner_id:
+          type: string
+          format: uuid
+        due_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+          nullable: true
+        status:
+          type: string
+          enum:
+          - todo
+          - in_progress
+          - done
+          - cancelled
+      minProperties: 1
+    AppointmentCreate:
+      type: object
+      additionalProperties: false
+      properties:
+        client_id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+          format: uuid
+        start_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        end_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        display_timezone:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Valid IANA timezone, e.g. Asia/Qyzylorda; metadata only, offsets define the instants.
+      required:
+      - client_id
+      - employee_id
+      - start_at
+      - end_at
+      - display_timezone
+    AppointmentUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        employee_id:
+          type: string
+          format: uuid
+        start_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        end_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        display_timezone:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Valid IANA timezone.
+        status:
+          type: string
+          enum:
+          - cancelled
+          description: Cancellation is terminal. Scheduled appointments may otherwise be rescheduled;
+            no reactivation.
+      minProperties: 1
+    Client:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        updated_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        email:
+          type: string
+          minLength: 1
+          maxLength: 254
+          format: email
+          description: Trim and normalize to lowercase under the MVP email policy.
+          nullable: true
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 16
+          pattern: ^\+[1-9][0-9]{7,14}$
+          nullable: true
+        archived:
+          type: boolean
+      required:
+      - id
+      - version
+      - created_at
+      - updated_at
+      - display_name
+      - email
+      - phone
+      - archived
+    Deal:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        updated_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        client_id:
+          type: string
+          format: uuid
+        owner_id:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          minLength: 1
+          maxLength: 15
+          pattern: ^(0|[1-9][0-9]{0,11})(\.[0-9]{1,2})?$
+          description: Non-negative exact decimal; server serializes two fractional digits. One deployment
+            currency.
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: Must equal the configured deployment currency, e.g. KZT.
+        stage:
+          type: string
+          enum:
+          - new
+          - qualified
+          - won
+          - lost
+        closed_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+          nullable: true
+      required:
+      - id
+      - version
+      - created_at
+      - updated_at
+      - title
+      - client_id
+      - owner_id
+      - amount
+      - currency
+      - stage
+      - closed_at
+    Task:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        updated_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+          description: Trim outer whitespace; reject blank strings and control characters.
+        client_id:
+          type: string
+          format: uuid
+          nullable: true
+        owner_id:
+          type: string
+          format: uuid
+        due_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+          nullable: true
+        status:
+          type: string
+          enum:
+          - todo
+          - in_progress
+          - done
+          - cancelled
+        completed_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+          nullable: true
+      required:
+      - id
+      - version
+      - created_at
+      - updated_at
+      - title
+      - client_id
+      - owner_id
+      - due_at
+      - status
+      - completed_at
+    Appointment:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        updated_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        client_id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+          format: uuid
+        start_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        end_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        display_timezone:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Valid IANA timezone, e.g. Asia/Qyzylorda; metadata only, offsets define the instants.
+        status:
+          type: string
+          enum:
+          - scheduled
+          - cancelled
+      required:
+      - id
+      - version
+      - created_at
+      - updated_at
+      - client_id
+      - employee_id
+      - start_at
+      - end_at
+      - display_timezone
+      - status
+    ReportSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        from:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        to:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        generated_at:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp with explicit UTC offset. Server responds in UTC.
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: Must equal the configured deployment currency, e.g. KZT.
+        clients_created:
+          type: integer
+          minimum: 0
+          format: int64
+        deals_created:
+          type: integer
+          minimum: 0
+          format: int64
+        tasks_completed:
+          type: integer
+          minimum: 0
+          format: int64
+        appointments_scheduled:
+          type: integer
+          minimum: 0
+          format: int64
+        won_deal_count:
+          type: integer
+          minimum: 0
+          format: int64
+        won_deal_value:
+          type: string
+          minLength: 1
+          maxLength: 30
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+      required:
+      - from
+      - to
+      - generated_at
+      - currency
+      - clients_created
+      - deals_created
+      - tasks_completed
+      - appointments_scheduled
+      - won_deal_count
+      - won_deal_value
+    UserPage:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/User'
+        next_cursor:
+          type: string
+          nullable: true
+          maxLength: 2048
+      required:
+      - data
+      - next_cursor
+    DirectoryUserPage:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/DirectoryUser'
+        next_cursor:
+          type: string
+          nullable: true
+          maxLength: 2048
+      required:
+      - data
+      - next_cursor
+    ClientPage:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Client'
+        next_cursor:
+          type: string
+          nullable: true
+          maxLength: 2048
+      required:
+      - data
+      - next_cursor
+    DealPage:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Deal'
+        next_cursor:
+          type: string
+          nullable: true
+          maxLength: 2048
+      required:
+      - data
+      - next_cursor
+    TaskPage:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Task'
+        next_cursor:
+          type: string
+          nullable: true
+          maxLength: 2048
+      required:
+      - data
+      - next_cursor
+    AppointmentPage:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Appointment'
+        next_cursor:
+          type: string
+          nullable: true
+          maxLength: 2048
+      required:
+      - data
+      - next_cursor
