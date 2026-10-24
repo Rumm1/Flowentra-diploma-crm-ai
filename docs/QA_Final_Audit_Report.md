@@ -11,20 +11,20 @@
 
 ## 1. Executive summary
 
-All six required task branches exist locally and on `origin`. Each contains the expected task deliverables, and each task branch has one task-specific commit relative to `main` (the PD-18 branch additionally receives this audit report and a contribution-evidence correction). No pull request for PD-13 through PD-18 appears in the accessible GitHub PR list. The task artifacts are therefore **Completed — Awaiting Review**, not accepted or merged.
+All six required task branches exist locally and on `origin`. Each contains the expected task deliverables, and each has an audited task-specific commit relative to `main` (the PD-18 branch additionally receives this audit report and contribution-evidence corrections). The latest GitHub refresh shows six open task PRs, #8–#13, all targeting `main`. They have no recorded reviews, review threads/comments, or checks, and their descriptions still contain blank template fields. The tasks are therefore **In Review — Awaiting Peer Review**, not accepted or merged.
 
 The written QA artifacts are substantially traceable and consistent: 37 PD-14 requirement IDs map one-to-one to the 37 PD-15 test cases; all 37 are also referenced by the PD-16 plan, and every requirement ID referenced by the PD-17 risk register exists in PD-14. The PD-17 risk register's 24 rows have consistent scores and levels. The PD-13 review contains 15 cited sources, including 12 peer-reviewed publications; its 15 references are cited in the review text.
 
 The repository's `main` branch remains a design/documentation baseline, not a runnable CRM: it has no application backend/frontend, database schema or migrations, deployed API, AI provider implementation, or runtime test suite. The API contract validator passes, but this is not runtime verification. No user, AI, security, performance, or product-value evaluation has been performed.
 
-Two already recorded review findings remain important: merged PRs #1–#6 lack accessible independent human-review evidence despite the repository merge policy and PR descriptions, and `README.md` / `docs/00_Submission_Checklist.md` contain stale PR-status statements. The PD-18 contribution evidence now also records its own original artifact commit, while correctly leaving attribution of author `2 <3>` unresolved.
+Three review findings remain important: merged PRs #1–#6 lack accessible independent human-review evidence despite the repository merge policy and PR descriptions; `README.md` / `docs/00_Submission_Checklist.md` contain stale PR-status statements; and the new PRs #8–#13 have incomplete descriptions and no peer-review/check evidence. The PD-18 contribution evidence records its original artifact commit and the new account-level PR evidence, while correctly leaving Git author `2 <3>` and real-world account identity unresolved.
 
 ## 2. Repository, branch, and evidence state
 
 - Fetch completed successfully. The current checkout is `pd-18-qa-review`; it tracked `origin/pd-18-qa-review` at the start of this audit, with no pre-existing local changes.
 - `origin/main` and local `main` are at `58a4f2be5a59dd20d72080f6a2d9721fbb9794bd`.
 - Each required local task branch tracks its corresponding `origin` branch. All six remote heads matched the task commits listed below when fetched.
-- The task branches add only the deliverables listed in the summary table, relative to `main`. No task-specific PR was found.
+- The task branches add only the deliverables listed in the summary table, relative to `main`. The latest GitHub refresh shows the six task PRs #8–#13 open against `main`.
 - Git records the PD-13 through PD-18 artifact commits under author `2 <3>`. This does not establish that Daniil Khvan authored them. Commit metadata was not rewritten.
 - `package.json` has one project script: `npm run validate:api`.
 - The accessible Taiga kanban page identifies the project as private. No board status was inspected through an authenticated project session or changed.
@@ -35,14 +35,14 @@ The SHA column records the task's deliverable commit. The PD-18 audit update is 
 
 | Task ID | Branch | Acceptance Criteria | Files | Validation | Commit SHA | Push Status | PR URL | Peer Review | Final Status |
 |---|---|---|---|---|---|---|---|---|---|
-| PD-13 | [`pd-13-literature-review`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-13-literature-review) | 15 sources / 12 peer-reviewed; citation metadata and analysis present | `docs/03_Literature_Review.md` | Source/reference/citation checks; DOI metadata cross-check | `f5daed37e785adcb5af8b9eaba8d4487712ef28b` | Confirmed on `origin` | No PR found | None recorded | Completed — Awaiting Review |
-| PD-14 | [`pd-14-requirements`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-14-requirements) | 23 FR, 14 NFR; unique IDs, acceptance criteria, scope, dependencies, traceability | `docs/06_Requirements.md` | 37 requirement and 37 acceptance IDs; traceability cross-check | `b5bbce29ba7385f8a5ca53d2f7177ae499049caa` | Confirmed on `origin` | No PR found | None recorded | Completed — Awaiting Review |
-| PD-15 | [`pd-15-test-cases`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-15-test-cases) | 37 test cases, valid CSV, requirement coverage, strategy and defect template | `tests/Test_Cases.csv`; `tests/Test_Strategy.md`; `tests/Defect_Report_Template.md` | CSV parsed; 37/37 trace; 36 Not Run, one static check Passed | `25b330b2217dd9e0599f756f2bff9ff08a147dc2` | Confirmed on `origin` | No PR found | None recorded | Completed — Awaiting Review |
-| PD-16 | [`pd-16-verification-plan`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-16-verification-plan) | Reproducible verification, AI, baseline, timing, integrity, usability, and metrics plan | `docs/09_Verification_and_Evaluation_Plan.md` | 37 requirement and 37 test references match PD-14/PD-15; targets reviewed as proposed | `2c45803b16827132f67008699814901ede63d588` | Confirmed on `origin` | No PR found | None recorded | Completed — Awaiting Review |
-| PD-17 | [`pd-17-risk-management`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-17-risk-management) | 24 risks, consistent scoring, owners, controls, and all requested categories | `docs/10_Project_Management_and_Risks.md`; `plans/Risk_Register.csv` | CSV structure, required fields, score/level arithmetic, and requirement references checked | `f14d1f9a473b92f7bc7ac03b3654770566725a22` | Confirmed on `origin` | No PR found | None recorded | Completed — Awaiting Review |
-| PD-18 | [`pd-18-qa-review`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-18-qa-review) | Evidence-based review, accurate PR and contribution evidence, pending status disclosures | `docs/QA_Review_Summary.md`; `plans/Contribution_Evidence.md`; `plans/Review_Checklist.md`; `docs/QA_Final_Audit_Report.md` | Reviewed against fetched GitHub/branch evidence; contribution table corrected to include PD-18 commit | `e4130bf3ba60afa2a4eb379cde66557398aaedec` | Original task commit confirmed on `origin`; audit report/update pushed as a later commit | No PR found | None recorded | Completed — Awaiting Review |
+| PD-13 | [`pd-13-literature-review`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-13-literature-review) | 15 sources / 12 peer-reviewed; citation metadata and analysis present | `docs/03_Literature_Review.md` | Source/reference/citation checks; DOI metadata cross-check | `f5daed37e785adcb5af8b9eaba8d4487712ef28b` | Confirmed on `origin` | [PR #11](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/11), open → `main` | None; no reviews/comments/checks | In Review — Awaiting Peer Review |
+| PD-14 | [`pd-14-requirements`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-14-requirements) | 23 FR, 14 NFR; unique IDs, acceptance criteria, scope, dependencies, traceability | `docs/06_Requirements.md` | 37 requirement and 37 acceptance IDs; traceability cross-check | `b5bbce29ba7385f8a5ca53d2f7177ae499049caa` | Confirmed on `origin` | [PR #10](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/10), open → `main` | None; no reviews/comments/checks | In Review — Awaiting Peer Review |
+| PD-15 | [`pd-15-test-cases`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-15-test-cases) | 37 test cases, valid CSV, requirement coverage, strategy and defect template | `tests/Test_Cases.csv`; `tests/Test_Strategy.md`; `tests/Defect_Report_Template.md` | CSV parsed; 37/37 trace; 36 Not Run, one static check Passed | `25b330b2217dd9e0599f756f2bff9ff08a147dc2` | Confirmed on `origin` | [PR #9](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/9), open → `main` | None; no reviews/comments/checks | In Review — Awaiting Peer Review |
+| PD-16 | [`pd-16-verification-plan`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-16-verification-plan) | Reproducible verification, AI, baseline, timing, integrity, usability, and metrics plan | `docs/09_Verification_and_Evaluation_Plan.md` | 37 requirement and 37 test references match PD-14/PD-15; targets reviewed as proposed | `2c45803b16827132f67008699814901ede63d588` | Confirmed on `origin` | [PR #8](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/8), open → `main` | None; no reviews/comments/checks | In Review — Awaiting Peer Review |
+| PD-17 | [`pd-17-risk-management`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-17-risk-management) | 24 risks, consistent scoring, owners, controls, and all requested categories | `docs/10_Project_Management_and_Risks.md`; `plans/Risk_Register.csv` | CSV structure, required fields, score/level arithmetic, and requirement references checked | `f14d1f9a473b92f7bc7ac03b3654770566725a22` | Confirmed on `origin` | [PR #12](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/12), open → `main` | None; no reviews/comments/checks | In Review — Awaiting Peer Review |
+| PD-18 | [`pd-18-qa-review`](https://github.com/Rumm1/Flowentra-diploma-crm-ai/tree/pd-18-qa-review) | Evidence-based review, accurate PR and contribution evidence, pending status disclosures | `docs/QA_Review_Summary.md`; `plans/Contribution_Evidence.md`; `plans/Review_Checklist.md`; `docs/QA_Final_Audit_Report.md` | Reviewed against fetched GitHub/branch evidence; contribution table updated for account-level PR evidence | `e4130bf3ba60afa2a4eb379cde66557398aaedec` | Task commit and audit updates confirmed on `origin` | [PR #13](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/13), open → `main` | None; no reviews/comments/checks | In Review — Awaiting Peer Review |
 
-“Confirmed on `origin`” means the task commit was present at the matching fetched remote branch head. It does not mean the branch was merged, reviewed, or accepted.
+“Confirmed on `origin`” means the task commit is present in the fetched remote branch. It does not mean the PR is merged, reviewed, or accepted. The PD-18 audit commit is an additional commit on the PD-18 branch.
 
 ## 4. Acceptance criteria by task
 
@@ -103,7 +103,7 @@ The SHA column records the task's deliverable commit. The PD-18 audit update is 
 |---|---|---|
 | Review findings are evidence-based | Met within inspected scope | The summary distinguishes process/documentation issues, missing evidence, potential issues, and blocked checks. The two confirmed findings concern review governance and stale PR-status documentation, not unobserved runtime defects. |
 | Contribution evidence matches Git history | Met with attribution limitation | All task commit hashes/authors were checked. The contribution table now includes PD-18 commit `e4130bf…`; all six task commits use `2 <3>`, which cannot be attributed to Daniil without identity evidence. |
-| PR status accuracy | Met for accessible records | GitHub PR list includes PRs #1–#7 only. PD-13–PD-18 PRs were not found; PR #7 is the unrelated open PD-08 PR. No approval is claimed. |
+| PR status accuracy | Met for accessible records | GitHub lists open PRs #8–#13 for PD-13–PD-18, each targeting `main`. No reviews, review threads/comments, requested reviewers, or check runs were returned; no approval is claimed. |
 | Pending checks remain pending | Met | Runtime implementation, tests, independent review, user evaluation, and attribution are described as pending/blocked where evidence is absent. |
 | Supervisor feedback | Met | The required statement is present: “Supervisor feedback was not available in the inspected project materials.” No fictional feedback is included. |
 | Known limitations | Met | No runtime application was available; external discussions, real-world Git author identity, and private Taiga task status could not be verified. |
@@ -134,11 +134,20 @@ No repository-provided check failed. Two initial ad hoc audit one-liners failed 
 
 ## 7. GitHub, review, and task-board status
 
-- GitHub lists PRs #1–#6 as closed with merge timestamps and PR #7 as open. PR #7 is PD-08, not one of the audited tasks; its review endpoint returned no reviews/comments and its combined status had no checks (`pending`, zero statuses) at audit time.
-- No PR for PD-13, PD-14, PD-15, PD-16, PD-17, or PD-18 was present in the accessible PR listing. Consequently there are no PR review decisions, comments, required checks, or merge-conflict states to report for these branches.
-- PR creation was not available from the current environment: GitHub CLI was unavailable or unauthenticated, and the browser compare page required sign-in. No PR was created and no PR was merged. The [PD-18 compare page](https://github.com/Rumm1/Flowentra-diploma-crm-ai/compare/main...pd-18-qa-review?expand=1) is available for an authenticated user.
-- The Taiga project page returned a private-project view, so task statuses were not inspected or changed. Recommended board action: keep PD-13–PD-18 open and move each to the workflow's review-ready/in-review state only after a peer-review PR is opened; do not mark accepted/closed until acceptance evidence and required review are recorded.
-- `CONTRIBUTING.md` says not to merge without independent review. Accessible records show PRs #1–#6 merged although their descriptions indicated independent review was pending/required. PR #1 contains an automated Codex review and unresolved threads; no independent human review record was returned for PRs #2–#6. This is a process/evidence discrepancy, not proof that the merged content is defective.
+| Task | PR | Source → target | Status / mergeability | Review, comments, checks |
+|---|---|---|---|---|
+| PD-13 | [#11](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/11) | `pd-13-literature-review` → `main` | Open, non-draft; `clean` | No reviews, review threads/comments, or check runs returned |
+| PD-14 | [#10](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/10) | `pd-14-requirements` → `main` | Open, non-draft; `clean` | No reviews, review threads/comments, or check runs returned |
+| PD-15 | [#9](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/9) | `pd-15-test-cases` → `main` | Open, non-draft; `clean` | No reviews, review threads/comments, or check runs returned |
+| PD-16 | [#8](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/8) | `pd-16-verification-plan` → `main` | Open, non-draft; `clean` | No reviews, review threads/comments, or check runs returned |
+| PD-17 | [#12](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/12) | `pd-17-risk-management` → `main` | Open, non-draft; `clean` | No reviews, review threads/comments, or check runs returned |
+| PD-18 | [#13](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/13) | `pd-18-qa-review` → `main` | Open, non-draft; mergeability `unknown` at inspection | No reviews, review threads/comments, or check runs returned |
+
+The six PRs are authored by GitHub account `DaniilKhvan`; this is account-level evidence, not independent real-world identity verification. Their PR descriptions retain the blank repository template, including empty task ID, summary, file list, baseline, validation, completion-time, Taiga reference, and reviewer-request fields; author checkboxes remain unchecked. No requested reviewers were returned. These are confirmed review-readiness gaps; no task PR has an approval or CI/check evidence.
+
+For context, PRs #1–#6 are closed with merge timestamps; PR #7 (PD-08) remains open. PR #7's reviews/comments were empty and its combined status had zero checks at inspection time. `CONTRIBUTING.md` prohibits merging without independent review, while available descriptions for merged PRs #1–#6 indicated independent review was pending/required. PR #1 has an automated Codex review and unresolved review threads; no human review record was returned for #2–#6.
+
+Taiga returned a private-project view, so statuses were not inspected or changed. Recommended board action: keep the six items open and move them to the workflow's in-review state, if available; do not mark accepted/closed until independent review and acceptance evidence are recorded. No PR was merged by this audit.
 
 ## 8. Findings, release risks, and remaining work
 
@@ -146,18 +155,19 @@ No repository-provided check failed. Two initial ad hoc audit one-liners failed 
 
 1. **Independent-review gate evidence is missing for merged PRs #1–#6 (High review priority).** Preserve history; obtain independent review of the merged content or document an authorized exception, and disposition the outstanding PR #1 threads.
 2. **Repository PR-status documentation is stale (Medium review priority).** Update README and submission checklist statuses and baseline references through an appropriately scoped, reviewed change.
+3. **Open task PRs #8–#13 are not review-ready (Medium review priority).** Their PR bodies are unfilled templates and no reviewer, review, or check evidence is present. Complete the metadata and request independent review.
 
 ### Critical release/readiness risks
 
 - There is no runnable CRM, backend/frontend source, database schema/migrations, deployed API, AI integration, or runtime tests on `main`. Product behavior and security cannot be accepted from design documents or a static API validator.
-- The PD-13 through PD-18 artifacts remain on separate unmerged branches and have no PRs; they are not one accepted project baseline.
-- PD-13–PD-18 commit attribution to Daniil is not established by Git metadata (`2 <3>`); verify through legitimate account/PR evidence. Do not rewrite existing author metadata.
+- The PD-13 through PD-18 artifacts remain on separate unmerged branches with open PRs #8–#13; they are not one accepted project baseline.
+- Git commit attribution to Daniil is not established by author metadata (`2 <3>`). PR account `DaniilKhvan` is verified at account level; the account-to-student mapping still needs independent confirmation. Do not rewrite existing author metadata.
 - Privacy review, AI provider/model selection, user recruitment/evaluation, supervisor feedback, and risk-owner acceptance remain outstanding.
 
 ### Required next actions
 
-1. Open review PRs for PD-13–PD-18 against `main` in dependency order: PD-13, PD-14, PD-15, PD-16, PD-17, then PD-18. Request an independent reviewer; do not self-approve or merge without the required review.
-2. Resolve the stale main-branch PR-status documentation and decide where the task artifacts are integrated. Reconcile dependent links and versions after review.
+1. Fill the task IDs, summaries, changed files, baseline, actual validation, limitations, Taiga references, and reviewer request in PRs #8–#13; request an independent reviewer and review in dependency order. Do not self-approve or merge.
+2. Resolve the stale main-branch PR-status documentation and decide integration order. Reconcile dependent links and versions after review.
 3. Implement a minimal vertical slice with reproducible setup, database migrations, server-side authorization, frontend workflows, and synthetic test data before claiming functional acceptance.
 4. Run PD-15 runtime cases and retain build-specific evidence; keep current `Not Run` statuses until actually executed.
 5. Approve and execute the PD-16 AI, usability, timing, integrity, security, performance, and reliability protocols. Continue to label targets as targets until measured.

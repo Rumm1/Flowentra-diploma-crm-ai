@@ -19,18 +19,18 @@ This is a documentation/repository review, not a code review of a running applic
 
 ## 2. Review scope
 
-Reviewed the synchronized `main` baseline and, where artifacts were absent from `main`, inspected the available remote task branches for PD-08 and PD-13 through PD-17. Reviewed repository files and inventory, Git branches/commits/authors, OpenAPI contract and validator, project proposal, README, architecture, backend/API design, AI design, submission checklist, contributing policy, requirements, test cases/strategy, verification plan, risk register, and accessible pull-request records.
+Reviewed the synchronized `main` baseline and, where artifacts were absent from `main`, inspected the available remote task branches for PD-08 and PD-13 through PD-18. Reviewed repository files and inventory, Git branches/commits/authors, OpenAPI contract and validator, project proposal, README, architecture, backend/API design, AI design, submission checklist, contributing policy, requirements, test cases/strategy, verification plan, risk register, and accessible pull-request records.
 
 No Go backend, React/TypeScript/JSX frontend, SQL migration, database model/schema, deployed endpoint, runtime test suite, or AI provider implementation was found. The repository does contain a JavaScript OpenAPI validator (`scripts/validate_openapi.cjs`); it checks contract artifacts only.
 
 ## 3. Repository state and materials inspected
 
 - `main` and `origin/main` were at `58a4f2be5a59dd20d72080f6a2d9721fbb9794bd`.
-- PD-13 through PD-17 were available as remote branches but were not merged into `main`; exact commits are recorded in [Contribution Evidence](../plans/Contribution_Evidence.md).
+- PD-13 through PD-18 were available as remote branches but were not merged into `main`; exact task commits are recorded in [Contribution Evidence](../plans/Contribution_Evidence.md).
 - PD-18 was created from `origin/main`; this review does not merge other task branches.
 - The design baseline includes `README.md`, `CONTRIBUTING.md`, `docs/01_Project_Proposal.md`, `docs/05_Technology_Comparison.md`, `docs/07_Architecture.md`, `docs/Backend_Design.md`, `docs/AI_Integration_and_Security.md`, `api/openapi.yaml`, diagrams, and the OpenAPI validator.
 - PD-14 requirements, PD-15 test inventory/strategy, PD-16 evaluation plan, and PD-17 risk register were read from their named task branches. They are proposed artifacts, not evidence of runtime implementation or stakeholder approval.
-- GitHub PRs #1–#6 are closed/merged; PR #7 (PD-08) is open. PRs for PD-13 through PD-17 were not present in the accessible PR list at review time.
+- GitHub PRs #1–#6 are closed/merged; PR #7 (PD-08) and task PRs #8–#13 are open against `main`.
 - The branch artifacts include [PD-14 requirements](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/b5bbce29ba7385f8a5ca53d2f7177ae499049caa/docs/06_Requirements.md), [PD-15 test strategy](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/25b330b2217dd9e0599f756f2bff9ff08a147dc2/tests/Test_Strategy.md), [PD-16 evaluation plan](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/2c45803b16827132f67008699814901ede63d588/docs/09_Verification_and_Evaluation_Plan.md), and [PD-17 risk register](https://github.com/Rumm1/Flowentra-diploma-crm-ai/blob/f14d1f9a473b92f7bc7ac03b3654770566725a22/plans/Risk_Register.csv), at the commits inspected.
 
 ## 4. Review methodology and severity
@@ -47,11 +47,12 @@ Finding classifications used below are: **Confirmed issue**, **Potential issue r
 |---|---|---|---|
 | QA-01 | Confirmed issue — review-process nonconformance | High | [PR #1](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/1)–[#6](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pull/6) were merged, while their PR descriptions state they were prepared for independent review and that independent review was pending/required. The current [`CONTRIBUTING.md`](../CONTRIBUTING.md) says not to merge without independent review. GitHub records for PR #1 show an automated Codex review and two unresolved review threads; PRs #2–#6 have no human review records in the accessible review endpoints. PR #6 has a Codex bot summary for commit `08de27ee99802af38a4d832d3a5a7970f8e66db2`, while its final PR head is `6052d3c0f3f9f87224881ae58e05d8e3ce74f327`. This is a verified process/evidence discrepancy, not a finding that the document contents are wrong. |
 | QA-02 | Missing evidence — implementation | High | The repository explicitly describes the stack as proposed and has no application source, database migrations, runtime tests, or deployment. Consequently, no conclusion can be made about runtime API compliance, authentication/RBAC enforcement, database integrity, frontend workflows, error behavior, or AI controls. The absence is confirmed; a feature defect is not. |
-| QA-03 | Missing evidence — integrated QA baseline | High | PD-13–PD-17 deliverables are on separate branches and absent from `main`; no PRs for these tasks were found in the accessible PR listing. The requirements, tests, evaluation plan, and risk register therefore cannot be consumed as one reviewed baseline from `main`. Their traceability is documented against exact branch commits instead. |
-| QA-04 | Missing evidence — contribution attribution | Medium | The five PD-13–PD-17 commits have Git author metadata `2 <3>`, which does not identify Daniil Khvan or another contributor. The task briefs assign Daniil responsibility, but the commits do not independently establish personal authorship. No PR for those branches was listed. The artifacts and commits are verifiable; individual attribution is not. |
+| QA-03 | Missing evidence — integrated QA baseline | High | PD-13–PD-18 deliverables remain on separate branches and absent from `main`. Open PRs #8–#13 exist, but none has recorded peer review or checks; the requirements, tests, evaluation plan, and risk register are not yet an approved, integrated baseline. Their cross-branch traceability was checked against exact commits. |
+| QA-04 | Missing evidence — contribution attribution | Medium | The six PD-13–PD-18 commits have Git author metadata `2 <3>`. GitHub PRs #8–#13 are authored by account `DaniilKhvan` and point to the corresponding task branches. This verifies account-level attribution but does not independently establish the account holder's real-world identity. |
 | QA-05 | No issue observed within the inspected scope — research honesty | Low | PD-08 PR #7's description and `evidence/Interview_Summary.md` explicitly identify four interviews as fictional simulations and state that no real interviews occurred. These materials must not be represented as field research. The PR remains open and has no recorded GitHub reviews or check runs. |
 | QA-06 | Missing evidence — supervisor feedback | Medium | No supervisor feedback or approval was available in the inspected active project materials. The historical draft commit also contains a blank feedback template that explicitly says feedback was not obtained; that file is not present on `main`. See the exact statement in section 14. |
 | QA-07 | Documentation inconsistency | Medium | [`README.md`](../README.md) and [`docs/00_Submission_Checklist.md`](./00_Submission_Checklist.md) still describe PD-01–PD-06 as unmerged/open or pending publication, while GitHub records [PRs #1–#6](https://github.com/Rumm1/Flowentra-diploma-crm-ai/pulls?q=is%3Apr+is%3Amerged) as merged into `main`. The README also identifies `1c5ca651...` as the clean baseline although the reviewed `main` is `58a4f2be...`. Update repository navigation/status statements; this does not invalidate the underlying design content. |
+| QA-08 | Confirmed issue — incomplete PR evidence | Medium | Open task PRs #8–#13 target `main`, but their descriptions retain the unfilled PR template: task ID, summary, changed files, baseline, validation, T0, Taiga reference, reviewer request, and author checkboxes are blank/uncompleted. The PR review, review-thread/comment, requested-reviewer, and check-run endpoints returned no records. Complete the descriptions and request independent peer review. |
 
 ## 6. Potential issues requiring further verification
 
@@ -102,18 +103,21 @@ The PD-17 register contains 24 entries across Technical (8), AI (6), Security & 
 
 ## 12. Pull request review status
 
-GitHub access was available for PR metadata and reviews:
+GitHub access was available for PR metadata and reviews. In the current snapshot:
 
 - PRs #1–#6 are merged. Available descriptions state independent review was pending/required. PR #1 has automated review findings and unresolved review threads; its later content includes corrections described in the PR, but the thread status remains unresolved in the returned GitHub data. PR #6's automated summary says no findings for an earlier commit; no human review record was found.
 - PR #7, PD-08 user research artifacts, is open against `main`, with no review records, review comments, or check runs returned at review time.
-- No PRs for PD-13, PD-14, PD-15, PD-16, or PD-17 were present in the accessible PR list.
-- No PR was approved or merged by this review. PD-18's own PR remains to be opened after push.
+- PR #8 (PD-16), #9 (PD-15), #10 (PD-14), #11 (PD-13), #12 (PD-17), and #13 (PD-18) are open against `main` at baseline `58a4f2be5a59dd20d72080f6a2d9721fbb9794bd`; source refs and task heads match the audited branches.
+- GitHub reports mergeable state `clean` for PRs #8–#12. PR #13's mergeable state was `unknown` at inspection time.
+- PRs #8–#13 are authored by GitHub account `DaniilKhvan`. Their descriptions retain the unfilled PR template; task ID, validation evidence, Taiga reference, and reviewer request are blank, and author checkboxes are not completed.
+- PR review records, review threads/comments, and check runs are empty for each of PRs #8–#13. No requested reviewers were returned. None has been approved or merged; independent peer review remains outstanding.
+- No PR was created, approved, or merged by this review. The six task PRs were already open in the latest GitHub refresh.
 
 The PR list and review data are a snapshot; future GitHub updates may change status.
 
 ## 13. Contribution evidence summary
 
-The branch/task artifacts and several PR authors are verifiable, but the QA task commits cannot be reliably attributed to Daniil from Git metadata. The full table, commit SHAs, exact author strings, PR references, and limitations are in [`plans/Contribution_Evidence.md`](../plans/Contribution_Evidence.md). No percentage allocation is justified.
+The branch/task artifacts and account-level PR authorship are verifiable. Git commits remain authored as `2 <3>`; the account `DaniilKhvan` authored PRs #8–#13, but the account-to-real-world identity mapping has not been independently authenticated. See [`plans/Contribution_Evidence.md`](../plans/Contribution_Evidence.md). No percentage allocation is justified.
 
 ## 14. Supervisor feedback availability
 
@@ -125,7 +129,7 @@ The current README identifies a supervisor but states no feedback or approval is
 
 - Review is limited to the fetched repository branches, documentation, Git metadata, and GitHub records accessible at the review time.
 - No application source or deployed environment exists in the inspected scope, so runtime correctness cannot be concluded.
-- PD-13–PD-17 artifacts are unmerged and may receive later changes; this review pins their currently inspected commits.
+- PD-13–PD-18 artifacts are unmerged and may receive later changes; the six task PRs are open. This review pins task commits and PR state observed at review time.
 - PR metadata/review endpoints do not prove informal discussions outside GitHub; absence of a GitHub review record is reported as absence of accessible evidence, not proof no discussion occurred elsewhere.
 - Git author strings and GitHub account names do not by themselves prove a real-world identity.
 - Risk ratings are qualitative judgments; evaluation targets are not accepted or achieved results.
@@ -134,7 +138,7 @@ The current README identifies a supervisor but states no feedback or approval is
 ## 16. Recommended corrective actions
 
 1. **Before marking merged tasks Done:** obtain and record independent human review evidence for PRs #1–#6 or document an authorized exception; resolve or explicitly disposition PR #1 review threads. Preserve the existing history.
-2. **Create one reviewable QA baseline:** open/review the PD-13–PD-18 task PRs in dependency order and reconcile requirement/test IDs and links after any upstream change. Do not treat separate branch artifacts as integrated `main`.
+2. **Complete the open task PRs:** fill in task IDs, summaries, changed files, validation, baselines, Taiga references, and reviewer requests in PRs #8–#13; request independent review in dependency order; reconcile requirement/test IDs and links after any upstream change. Do not treat these artifacts as integrated `main` until merged.
 3. **Implement a vertical slice:** provide reproducible source, database migration, frontend, deployment instructions, and synthetic fixtures before claiming functionality.
 4. **Prioritize core safeguards:** implement and execute authentication/RBAC/cross-user isolation, database constraints/transactions, error handling, audit, idempotency, and appointment concurrency tests.
 5. **Keep AI disabled for real data until ready:** select a provider, complete processing/retention review, implement bounded validation and actor-bound confirmation, and run the planned synthetic safety/quality suite.
@@ -146,13 +150,13 @@ The current README identifies a supervisor but states no feedback or approval is
 | Item | Status | Missing evidence / next step |
 |---|---|---|
 | Application/API/database/frontend implementation | Blocked | Source, migrations, runnable environment, and integrated build |
-| PD-13–PD-17 integrated documentation baseline | Pending | PR review and approved integration to `main` |
+| PD-13–PD-18 integrated documentation baseline | Pending | Independent review and approved integration of open PRs #8–#13 |
 | Independent human review for PRs #1–#6 | Pending | Verifiable review record or authorized exception |
 | PR #7 independent review and checks | Pending | Reviewer feedback and CI/check evidence |
 | Runtime tests and test report | Blocked | Implemented system and test environment |
 | User/usability and AI evaluation | Blocked | Working prototype, approved protocol, participants/dataset, results |
 | Supervisor feedback | Pending | Actual dated supervisor feedback or approval source |
-| Daniil authorship for PD-13–PD-17 task commits | Pending | Reliable identity/PR evidence linking Git author `2 <3>` to Daniil |
+| Real-world identity behind Git author `2 <3>` | Pending | Independently verified link between GitHub account `DaniilKhvan` and the assigned student; do not rewrite commit metadata |
 | Risk owner assignment and control implementation | Pending | Team-confirmed role assignments and tested mitigations |
 
 ## 18. Overall evidence-based assessment
